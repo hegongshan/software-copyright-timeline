@@ -1,0 +1,88 @@
+<html>
+
+<head>
+    <title>软件著作权申请时间线解析</title>
+    <style>
+        .text-center {
+            text-align: center;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        #result {
+            margin-top: 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        tr:hover {
+            background-color: black;
+            color: white;
+        }
+
+        th, td {
+            border-top: 1px solid gray;
+            border-bottom: 1px solid gray;
+            padding: 5px 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main" class="text-center">
+        <h1>软件著作权申请时间线解析</h1>
+        申请历史JSON：<textarea id="json" rows="2" cols="100"></textarea>
+        <button id="parseBtn">解析</button>
+        <div id="result"></div>
+    </div>
+</body>
+<script>
+    function formatWithZero(num) {
+        return num < 10 ? `0${num}` : num;
+    }
+    function strftime(str) {
+        let dateFromTimestampe = new Date(str);
+        let year = dateFromTimestampe.getFullYear();
+        let month = formatWithZero(dateFromTimestampe.getMonth() + 1);
+        let day = formatWithZero(dateFromTimestampe.getDate());
+        let hour = formatWithZero(dateFromTimestampe.getHours());
+        let minute = formatWithZero(dateFromTimestampe.getMinutes());
+        let second = formatWithZero(dateFromTimestampe.getSeconds());
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    }
+    window.onload = function () {
+        let oBtn = document.getElementById("parseBtn");
+        let oData = document.getElementById("json");
+        let oResult = document.getElementById("result");
+
+        oBtn.onclick = function () {
+            let r = JSON.parse(oData.value)["data"];
+            let content = "<table>";
+            content += "<caption class='text-left'><strong>解析结果：</strong></caption>";
+            content += "<tr><th class='text-center'>序号</th>";
+            content += "<th class='text-left'>用户状态</th>";
+            content += "<th class='text-left'>操作状态</th>";
+            content += "<th class='text-left'>时间</th></tr>";
+            for (var i = 0; i < r.length; i++) {
+                let item = r[i];
+                content += `<tr><td class="text-center">${i + 1}</td>`;
+                content += `<td>${item["userStatus"]}</td>`;
+                content += `<td>${item["operateStatus"]}</td>`;
+                content += `<td>${strftime(r[i]["createTime"])}`;
+                if (item["handleOption"] != null) {
+                    content += `<br/><small>(${item["handleOption"]})</small>`;
+                }
+                content += "</td></tr>"
+            }
+            content += "</table>";
+            oResult.innerHTML = content;
+        };
+    };
+</script>
+
+</html>
