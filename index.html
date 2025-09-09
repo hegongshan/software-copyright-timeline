@@ -11,6 +11,10 @@
             text-align: left;
         }
 
+        .text-right {
+            text-align: right;
+        }
+
         #result {
             margin-top: 10px;
         }
@@ -34,10 +38,29 @@
 </head>
 
 <body>
-    <div id="main" class="text-center">
-        <h1>软件著作权申请时间线解析</h1>
-        申请历史JSON：<textarea id="json" rows="2" cols="100"></textarea>
-        <button id="parseBtn">解析</button>
+    <div id="main" style="margin: 0 15%">
+        <h1 class="text-center">软件著作权申请时间线解析</h1>
+        <div>
+            <div>
+                <label class="text-right">账号ID：</label>
+                <input type="text" id="accountId">
+            <!-- </div>
+            <div> -->
+                <label class="text-right">Authorization_key: </label>
+                <input type="text" name="" id="authorizationKey">
+            <!-- </div>
+            <div> -->
+                <label class="text-right">Authorization_token: </label>
+                <input type="text" name="" id="authorizationToken">
+                <button id="flowNumberListBtn">获取申请列表</button>
+            </div>
+
+            <div>
+                <label class="text-right">软著名称：</label>
+                <select id="flowNumberList"></select>
+            <button id="timelineBtn">解析申请时间线</button>
+            </div>
+        </div>
         <div id="result"></div>
     </div>
 </body>
@@ -55,32 +78,96 @@
         let second = formatWithZero(dateFromTimestampe.getSeconds());
         return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     }
+
+    function get(url, callback, requestHeaders) {
+        let xhr = new XMLHttpRequest();
+        xhr.open("get", url);
+        for (var headerName in requestHeaders) {
+            xhr.setRequestHeader(headerName, requestHeaders[headerName]);
+        }
+        xhr.send();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                callback(xhr.status, xhr.responseText);
+            }
+        };
+    }
+    
     window.onload = function () {
-        let oBtn = document.getElementById("parseBtn");
-        let oData = document.getElementById("json");
+        let oAccount = document.getElementById("accountId");
+        let oFlowNumberList = document.getElementById("flowNumberList");
+        let oAuthorizationKey = document.getElementById("authorizationKey");
+        let oAuthorizationToken = document.getElementById("authorizationToken");
+
+        let oFlowNumberListBtn = document.getElementById("flowNumberListBtn");
+        let oTimelineBtn = document.getElementById("timelineBtn");
         let oResult = document.getElementById("result");
 
-        oBtn.onclick = function () {
-            let r = JSON.parse(oData.value)["data"];
-            let content = "<table>";
-            content += "<caption class='text-left'><strong>解析结果：</strong></caption>";
-            content += "<tr><th class='text-center'>序号</th>";
-            content += "<th class='text-left'>用户状态</th>";
-            content += "<th class='text-left'>操作状态</th>";
-            content += "<th class='text-left'>时间</th></tr>";
-            for (var i = 0; i < r.length; i++) {
-                let item = r[i];
-                content += `<tr><td class="text-center">${i + 1}</td>`;
-                content += `<td>${item["userStatus"]}</td>`;
-                content += `<td>${item["operateStatus"]}</td>`;
-                content += `<td>${strftime(r[i]["createTime"])}`;
-                if (item["handleOption"] != null) {
-                    content += `<br/><small>(${item["handleOption"]})</small>`;
+        oFlowNumberListBtn.onclick = function() {
+            let url = `https://gateway.ccopyright.com.cn/registerQuerySoftServer/userCenter/statusList/${oAccount.value}?keyWord=&applyDate=ALL&status=ALL&applyType=&createUser=${oAccount.value}&pageNum=1&pageSize=10`;
+            get(url, 
+                function(status, responseText) {
+                    let data = JSON.parse(responseText);
+                    if (status != 200) {
+                        oFlowNumberList.innerHTML = data["msg"];
+                        return;
+                    }
+                    
+                    let r = data["data"]["list"]
+                    let content;
+                    for (var i = 0; i < r.length; i++) {
+                        let item = r[i];
+                        content += `<option value="${item["flowNumber"]}">${item["softwareFullName"]} [ ${item["showName"]} ]</option>`;
+                    }
+                    oFlowNumberList.innerHTML = content;
+                }, 
+                {
+                    "Authorization": `Bearer ${oAuthorizationToken.value}`,
+                    "Authorization_key": oAuthorizationKey.value,
+                    "Authorization_token": oAuthorizationToken.value,
+                    "Device": "pc"
                 }
-                content += "</td></tr>"
-            }
-            content += "</table>";
-            oResult.innerHTML = content;
+            );
+        };
+
+        oTimelineBtn.onclick = function () {
+            let url = `https://gateway.ccopyright.com.cn/registerQuerySoftServer/userCenter/flowNumberHistory/${oAccount.value}/${oFlowNumberList.options[oFlowNumberList.selectedIndex].value}`;
+            get(url, 
+                function(status, responseText) {
+                    let data = JSON.parse(responseText);
+                    if (status != 200) {
+                        oResult.innerHTML = data["message"];
+                        return;
+                    }
+                    
+                    let r = data["data"]
+                    let content = "<table>";
+                    content += "<caption class='text-left'><strong>解析结果：</strong></caption>";
+                    content += "<tr><th class='text-center'>序号</th>";
+                    content += "<th class='text-left'>用户状态</th>";
+                    content += "<th class='text-left'>操作状态</th>";
+                    content += "<th class='text-left'>时间</th></tr>";
+                    for (var i = 0; i < r.length; i++) {
+                        let item = r[i];
+                        content += `<tr><td class="text-center">${i + 1}</td>`;
+                        content += `<td>${item["userStatus"]}</td>`;
+                        content += `<td>${item["operateStatus"]}</td>`;
+                        content += `<td>${strftime(r[i]["createTime"])}`;
+                        if (item["handleOption"] != null) {
+                            content += `<br/><small>(${item["handleOption"]})</small>`;
+                        }
+                        content += "</td></tr>"
+                    }
+                    content += "</table>";
+                    oResult.innerHTML = content;
+                }, 
+                {
+                    "Authorization": `Bearer ${oAuthorizationToken.value}`,
+                    "Authorization_key": oAuthorizationKey.value,
+                    "Authorization_token": oAuthorizationToken.value,
+                    "Device": "pc"
+                }
+            );
         };
     };
 </script>
