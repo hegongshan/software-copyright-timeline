@@ -38,7 +38,7 @@
 </head>
 
 <body>
-    <div id="main" style="margin: 0 15%">
+    <div id="main" style="margin: 0 5%">
         <h1 class="text-center">软件著作权申请时间线解析</h1>
         <div>
             <div><button id="parseBtn">从剪贴板导入Key和Token</button></div>
@@ -124,7 +124,7 @@
                     oAuthorizationToken.value = json[0][0]["token"];
                 }
             }).catch(err => {
-                console.error('读取剪切板内容失败：', err);
+                console.error("读取剪贴板内容失败：", err);
             });
         };
 
@@ -146,7 +146,7 @@
                         return;
                     }
                     
-                    let r = data["data"]["list"]
+                    let r = data["data"]["list"];
                     let content;
                     for (var i = 0; i < r.length; i++) {
                         let item = r[i];
@@ -181,7 +181,7 @@
                         return;
                     }
                     
-                    let r = data["data"]
+                    let r = data["data"];
                     let content = "<table>";
                     content += "<caption class='text-left'><strong>解析结果：</strong></caption>";
                     content += "<tr><th class='text-center'>序号</th>";
@@ -197,7 +197,7 @@
                         if (item["handleOption"] != null) {
                             content += `<br/><small>(${item["handleOption"]})</small>`;
                         }
-                        content += "</td></tr>"
+                        content += "</td></tr>";
                     }
                     content += "</table>";
                     oResult.innerHTML = content;
