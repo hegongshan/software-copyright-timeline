@@ -44,12 +44,10 @@
             <div>
                 <label class="text-right">账号ID：</label>
                 <input type="text" id="accountId">
-            <!-- </div>
-            <div> -->
+
                 <label class="text-right">Authorization_key: </label>
                 <input type="text" name="" id="authorizationKey">
-            <!-- </div>
-            <div> -->
+
                 <label class="text-right">Authorization_token: </label>
                 <input type="text" name="" id="authorizationToken">
                 <button id="flowNumberListBtn">获取申请列表</button>
@@ -95,15 +93,23 @@
     
     window.onload = function () {
         let oAccount = document.getElementById("accountId");
-        let oFlowNumberList = document.getElementById("flowNumberList");
         let oAuthorizationKey = document.getElementById("authorizationKey");
         let oAuthorizationToken = document.getElementById("authorizationToken");
 
+        let oFlowNumberList = document.getElementById("flowNumberList");
         let oFlowNumberListBtn = document.getElementById("flowNumberListBtn");
         let oTimelineBtn = document.getElementById("timelineBtn");
         let oResult = document.getElementById("result");
 
         oFlowNumberListBtn.onclick = function() {
+            let accountId = oAccount.value.trim();
+            let authorizationKey = oAuthorizationKey.value.trim();
+            let authorizationToken = oAuthorizationToken.value.trim();
+            if (accountId == "" || authorizationKey == "" || authorizationToken == "") {
+                alert("请填写账号ID、Authorization_key以及Authorization_token等信息");
+                return;
+            }
+
             let url = `https://gateway.ccopyright.com.cn/registerQuerySoftServer/userCenter/statusList/${oAccount.value}?keyWord=&applyDate=ALL&status=ALL&applyType=&createUser=${oAccount.value}&pageNum=1&pageSize=10`;
             get(url, 
                 function(status, responseText) {
@@ -131,7 +137,15 @@
         };
 
         oTimelineBtn.onclick = function () {
-            let url = `https://gateway.ccopyright.com.cn/registerQuerySoftServer/userCenter/flowNumberHistory/${oAccount.value}/${oFlowNumberList.options[oFlowNumberList.selectedIndex].value}`;
+            let accountId = oAccount.value.trim();
+            let authorizationKey = oAuthorizationKey.value.trim();
+            let authorizationToken = oAuthorizationToken.value.trim();
+            if (accountId == "" || authorizationKey == "" || authorizationToken == "" || oFlowNumberList.options.length == 0) {
+                alert("请填写账号ID、Authorization_key以及Authorization_token等信息");
+                return;
+            }
+
+            let url = `https://gateway.ccopyright.com.cn/registerQuerySoftServer/userCenter/flowNumberHistory/${accountId}/${oFlowNumberList.options[oFlowNumberList.selectedIndex].value}`;
             get(url, 
                 function(status, responseText) {
                     let data = JSON.parse(responseText);
@@ -162,9 +176,9 @@
                     oResult.innerHTML = content;
                 }, 
                 {
-                    "Authorization": `Bearer ${oAuthorizationToken.value}`,
-                    "Authorization_key": oAuthorizationKey.value,
-                    "Authorization_token": oAuthorizationToken.value,
+                    "Authorization": `Bearer ${authorizationToken}`,
+                    "Authorization_key": authorizationKey,
+                    "Authorization_token": authorizationToken,
                     "Device": "pc"
                 }
             );
