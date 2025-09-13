@@ -41,6 +41,7 @@
     <div id="main" style="margin: 0 15%">
         <h1 class="text-center">软件著作权申请时间线解析</h1>
         <div>
+            <div><button id="parseBtn">从剪贴板导入Key和Token</button></div>
             <div>
                 <label class="text-right">账号ID：</label>
                 <input type="text" id="accountId">
@@ -56,7 +57,7 @@
             <div>
                 <label class="text-right">软著名称：</label>
                 <select id="flowNumberList"></select>
-            <button id="timelineBtn">解析申请时间线</button>
+                <button id="timelineBtn">解析申请时间线</button>
             </div>
         </div>
         <div id="result"></div>
@@ -92,6 +93,8 @@
     }
     
     window.onload = function () {
+        let oParseBtn = document.getElementById("parseBtn");
+
         let oAccount = document.getElementById("accountId");
         let oAuthorizationKey = document.getElementById("authorizationKey");
         let oAuthorizationToken = document.getElementById("authorizationToken");
@@ -100,6 +103,30 @@
         let oFlowNumberListBtn = document.getElementById("flowNumberListBtn");
         let oTimelineBtn = document.getElementById("timelineBtn");
         let oResult = document.getElementById("result");
+
+        oParseBtn.onclick = function() {
+            navigator.clipboard.readText().then(text => {
+                text = text.trim();
+                if (text == "") {
+                    return;
+                }
+
+                let json = JSON.parse(text);
+                if (json.length == 0 || json[0].length == 0) {
+                    return;
+                }
+
+                let data = json[0][0];
+                if (data.hasOwnProperty("key")) {
+                    oAuthorizationKey.value = json[0][0]["key"];
+                }
+                if (data.hasOwnProperty("token")) {
+                    oAuthorizationToken.value = json[0][0]["token"];
+                }
+            }).catch(err => {
+                console.error('读取剪切板内容失败：', err);
+            });
+        };
 
         oFlowNumberListBtn.onclick = function() {
             let accountId = oAccount.value.trim();
