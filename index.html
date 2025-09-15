@@ -41,7 +41,7 @@
     <div id="main" style="margin: 0 5%">
         <h1 class="text-center">软件著作权申请时间线解析</h1>
         <div>
-            <div><button id="parseBtn">从剪贴板导入Key和Token</button></div>
+            <div><button id="parseBtn">从剪贴板导入账号ID、Key以及Token</button></div>
             <div>
                 <label class="text-right">账号ID：</label>
                 <input type="text" id="accountId">
@@ -112,16 +112,14 @@
                 }
 
                 let json = JSON.parse(text);
-                if (json.length == 0 || json[0].length == 0) {
-                    return;
+                if (json.hasOwnProperty("id")) {
+                    oAccount.value = json["id"];
                 }
-
-                let data = json[0][0];
-                if (data.hasOwnProperty("key")) {
-                    oAuthorizationKey.value = json[0][0]["key"];
+                if (json.hasOwnProperty("authorization_key")) {
+                    oAuthorizationKey.value = json["authorization_key"];
                 }
-                if (data.hasOwnProperty("token")) {
-                    oAuthorizationToken.value = json[0][0]["token"];
+                if (json.hasOwnProperty("authorization_token")) {
+                    oAuthorizationToken.value = json["authorization_token"];
                 }
             }).catch(err => {
                 console.error("读取剪贴板内容失败：", err);
